@@ -3,6 +3,7 @@ import pandas as pd
 from email import policy
 from email.parser import BytesParser
 from bs4 import BeautifulSoup
+import webbrowser
 
 def load_eml_file(file_obj):
     msg = BytesParser(policy=policy.default).parse(file_obj)
@@ -44,7 +45,10 @@ def main():
             df = pd.DataFrame(links)
 
             st.subheader("Extracted Links")
-            st.dataframe(df)
+            for i, row in df.iterrows():
+                st.markdown(f"[{row['link_text']}]({row['url']})")
+                if st.button(f"Open Link {i+1}"):
+                    webbrowser.open_new_tab(row['url'])
 
             if not df.empty:
                 csv = df.to_csv(index=False).encode('utf-8')
