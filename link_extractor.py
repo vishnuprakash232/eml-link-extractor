@@ -4,6 +4,7 @@ from email import policy
 from email.parser import BytesParser
 from bs4 import BeautifulSoup
 import webbrowser
+import time
 
 def load_eml_file(file_obj):
     msg = BytesParser(policy=policy.default).parse(file_obj)
@@ -44,13 +45,16 @@ def main():
             links = extract_links_from_html(email_data["html"])
             df = pd.DataFrame(links)
 
-            st.subheader("Extracted Links")
-            for i, row in df.iterrows():
-                st.markdown(f"[{row['link_text']}]({row['url']})")
-                if st.button(f"Open Link {i+1}"):
-                    webbrowser.open_new_tab(row['url'])
+            st.subheader("Extracted Links Table")
+            st.dataframe(df)
 
+            # Automatically open links (will work only if running locally)
             if not df.empty:
+                st.info("Opening all links in new browser tabs...")
+                for url in df['url']:
+                    webbrowser.open_new_tab(url)
+                    time.sleep(1)  # slight delay to prevent browser from blocking
+
                 csv = df.to_csv(index=False).encode('utf-8')
                 st.download_button("Download CSV", csv, "extracted_links.csv", "text/csv")
         except Exception as e:
